@@ -45,19 +45,18 @@ assert cloudpickle.__version__ >= "1.4.0", "Update the cloudpickle library using
 
 # COMMAND ----------
 
-# If you have the File > Upload Data menu option, follow the instructions in the previous cell to upload the data from your local machine.
-# The generated code, including the required edits described in the previous cell, is shown here for reference.
-
 import pandas as pd
 
-# In the following lines, replace <username> with your username.
-white_wine = pd.read_csv("/dbfs/FileStore/shared_uploads/<username>/winequality_white.csv", sep=';')
-red_wine = pd.read_csv("/dbfs/FileStore/shared_uploads/<username>/winequality_red.csv", sep=';')
+white_wine = pd.read_csv("/dbfs/databricks-datasets/wine-quality/winequality-white.csv", sep=";")
+red_wine = pd.read_csv("/dbfs/databricks-datasets/wine-quality/winequality-red.csv", sep=";")
 
-# If you do not have the File > Upload Data menu option, uncomment and run these lines to load the dataset.
+# COMMAND ----------
 
-#white_wine = pd.read_csv("/dbfs/databricks-datasets/wine-quality/winequality-white.csv", sep=";")
-#red_wine = pd.read_csv("/dbfs/databricks-datasets/wine-quality/winequality-red.csv", sep=";")
+display(white_wine)
+
+# COMMAND ----------
+
+display(red_wine)
 
 # COMMAND ----------
 
@@ -68,14 +67,14 @@ red_wine = pd.read_csv("/dbfs/FileStore/shared_uploads/<username>/winequality_re
 red_wine['is_red'] = 1
 white_wine['is_red'] = 0
 
-data = pd.concat([red_wine, white_wine], axis=0)
+wine = pd.concat([red_wine, white_wine], axis=0)
 
 # Remove spaces from column names
-data.rename(columns=lambda x: x.replace(' ', '_'), inplace=True)
+wine.rename(columns=lambda x: x.replace(' ', '_'), inplace=True)
 
 # COMMAND ----------
 
-data.head()
+wine.head()
 
 # COMMAND ----------
 
@@ -90,7 +89,7 @@ data.head()
 # COMMAND ----------
 
 import seaborn as sns
-sns.distplot(data.quality, kde=False)
+sns.distplot(wine.quality, kde=False)
 
 # COMMAND ----------
 
@@ -100,8 +99,8 @@ sns.distplot(data.quality, kde=False)
 
 # COMMAND ----------
 
-high_quality = (data.quality >= 7).astype(int)
-data.quality = high_quality
+high_quality = (wine.quality >= 7).astype(int)
+wine.quality = high_quality
 
 # COMMAND ----------
 
@@ -115,10 +114,10 @@ dims = (3, 4)
 
 f, axes = plt.subplots(dims[0], dims[1], figsize=(25, 15))
 axis_i, axis_j = 0, 0
-for col in data.columns:
+for col in wine.columns:
   if col == 'is_red' or col == 'quality':
     continue # Box plots cannot be used on indicator variables
-  sns.boxplot(x=high_quality, y=data[col], ax=axes[axis_i, axis_j])
+  sns.boxplot(x=high_quality, y=wine[col], ax=axes[axis_i, axis_j])
   axis_j += 1
   if axis_j == dims[1]:
     axis_i += 1
@@ -138,7 +137,7 @@ for col in data.columns:
 
 # COMMAND ----------
 
-data.isna().any()
+wine.isna().any()
 
 # COMMAND ----------
 
@@ -148,7 +147,7 @@ data.isna().any()
 
 from sklearn.model_selection import train_test_split
 
-train, test = train_test_split(data, random_state=123)
+train, test = train_test_split(wine, random_state=123)
 X_train = train.drop(["quality"], axis=1)
 X_test = test.drop(["quality"], axis=1)
 y_train = train.quality
@@ -433,7 +432,7 @@ print(f'AUC: {roc_auc_score(y_test, model.predict(X_test))}')
 # In the real world, this would be a new batch of data.
 spark_df = spark.createDataFrame(X_train)
 # Replace <username> with your username before running this cell.
-table_path = "dbfs:/<username>/delta/wine_data"
+table_path = "dbfs:/kirill_kabanov@epam.com/delta/wine_data"
 # Delete the contents of this path in case this cell has already been run
 dbutils.fs.rm(table_path, True)
 spark_df.write.format("delta").save(table_path)
