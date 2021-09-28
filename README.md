@@ -1,10 +1,26 @@
-* Deploy infrastructure with terraform
+# Spark ML Homework
+
+## 0. Prerequisites
+- Terraform
+- Azure account
+- Azure CLI
+
+## 1. Setup infrastructure via Terraform:
 ```
+az login
+cd ./terraform
+
 terraform init
-terraform plan -out terraform.plan
-terraform apply terraform.plan
-....
+terraform plan -out ./state/terraform.plan
+terraform apply ./state/terraform.plan
+
+cd ../
+
+# Destroy all necessary infrastructure after completing the homework:
 terraform destroy
 ```
-* Copy notebook and data into Databricks cluster
-* Execute all the steps from "ML End-to-End Example" notebook
+
+## 2. Check you Databricks workspace
+* Everything is ready for launching the notebook
+* Example of the MLFlow runs is inside media folder
+
